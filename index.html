@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手機鬥氣大賽 - KOF Mobile</title>
+    <style>
+        /* 防止手機長按彈出選單同雙擊縮放 */
+        * {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #050505;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around; /* 讓元件在手機螢幕平均分佈 */
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            text-shadow: 0 0 8px #ffcc00;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* 鬥氣槽區域 */
+        .battle-area {
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .fighter-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .cpu-text { color: #ff4d4d; }
+        .player-text { color: #4facfe; }
+
+        .power-container {
+            width: 100%;
+            height: 45px;
+            background-color: #222;
+            border: 3px solid #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 左側電腦氣條 */
+        #comp-bar {
+            position: absolute;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(to right, #600, #f00);
+            width: 50%;
+            transition: width 0.05s ease-out;
+        }
+
+        /* 右側玩家氣條 */
+        #player-bar {
+            position: absolute;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(to left, #006, #00f);
+            width: 50%;
+            transition: width 0.05s ease-out;
+        }
+
+        /* 交界閃光 */
+        #clash-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #fff;
+            box-shadow: 0 0 15px 5px #fff, 0 0 25px 8px #ffcc00;
+            z-index: 5;
+            transform: translateX(-50%);
+            left: 50%;
+            transition: left 0.05s ease-out;
+        }
+
+        /* 手機大按鈕區 */
+        .controller {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 40px;
+        }
+
+        #tap-zone {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #4facfe 0%, #007bff 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.5);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            active-transform: scale(0.92); /* 模擬點擊縮放 */
+        }
+
+        #tap-zone:active {
+            transform: scale(0.92);
+            background: radial-gradient(circle, #007bff 0%, #4facfe 100%);
+        }
+
+        #message {
+            font-size: 2.5rem;
+            font-weight: 900;
+            height: 60px;
+            margin: 15px 0;
+        }
+
+        .win { color: #4facfe; text-shadow: 0 0 20px #4facfe; }
+        .lose { color: #ff4d4d; text-shadow: 0 0 20px #ff4d4d; }
+
+        .btn-retry {
+            background: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>鬥氣 MOBILE</h1>
+</div>
+
+<div class="battle-area">
+    <div class="fighter-info">
+        <span class="cpu-text">CPU</span>
+        <span class="player-text">YOU</span>
+    </div>
+    <div class="power-container">
+        <div id="comp-bar"></div>
+        <div id="player-bar"></div>
+        <div id="clash-line"></div>
+    </div>
+</div>
+
+<div id="message"></div>
+
+<div class="controller">
+    <div id="tap-zone">狂 㩒 !!</div>
+    <br>
+    <button class="btn-retry" onclick="resetGame()">RESET</button>
+</div>
+
+<script>
+    let pos = 50; // 50 是中間
+    let active = false;
+    let cpuTimer;
+
+    // 參數微調 (手機版建議玩家威力大啲，因為手指感應冇 mouse 咁快)
+    const playerPower = 4.5;
+    const cpuPower = 3.0;
+    const cpuSpeed = 160;
+
+    const compBar = document.getElementById('comp-bar');
+    const playerBar = document.getElementById('player-bar');
+    const clashLine = document.getElementById('clash-line');
+    const tapZone = document.getElementById('tap-zone');
+    const msg = document.getElementById('message');
+
+    function update() {
+        clashLine.style.left = pos + "%";
+        compBar.style.width = pos + "%";
+        playerBar.style.width = (100 - pos) + "%";
+
+        if (pos <= 0) victory();
+        if (pos >= 100) defeat();
+    }
+
+    // 手機端使用 pointerdown 反應最快，支援手指同埋 Stylus
+    tapZone.addEventListener('pointerdown', (e) => {
+        if (!active) return;
+        e.preventDefault(); // 防止長按彈出選單
+        pos -= playerPower;
+        if (pos < 0) pos = 0;
+        update();
+    });
+
+    function cpuTick() {
+        if (!active) return;
+        pos += cpuPower;
+        if (pos > 100) pos = 100;
+        update();
+        cpuTimer = setTimeout(cpuTick, cpuSpeed);
+    }
+
+    function victory() {
+        active = false;
+        clearTimeout(cpuTimer);
+        msg.innerHTML = '<span class="win">YOU WIN!</span>';
+    }
+
+    function defeat() {
+        active = false;
+        clearTimeout(cpuTimer);
+        msg.innerHTML = '<span class="lose">K.O.</span>';
+    }
+
+    function resetGame() {
+        pos = 50;
+        active = true;
+        msg.innerHTML = "";
+        update();
+        clearTimeout(cpuTimer);
+        setTimeout(cpuTick, 800);
+    }
+
+    // 啟動
+    resetGame();
+</script>
+
+</body>
+</html>
