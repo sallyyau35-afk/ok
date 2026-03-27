@@ -1,131 +1,263 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Power Clash: NIGHTMARE</title>
-    <style>
-        html, body {
-            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
-            background-color: #000; color: white; font-family: 'Impact', sans-serif;
-            touch-action: none; -webkit-user-select: none; user-select: none;
-            position: fixed;
-        }
-
-        body { display: flex; flex-direction: column; align-items: center; justify-content: space-around; }
-
-        .header h1 {
-            font-size: 2.2rem; color: #ff0000; text-shadow: 0 0 15px #f00;
-            margin: 0; font-style: italic; letter-spacing: 2px;
-        }
-
-        /* 難度顯示 */
-        #difficulty-display {
-            font-size: 1rem; color: #ffcc00; margin-top: 5px; text-transform: uppercase;
-        }
-
-        .battle-container { width: 92%; max-width: 500px; }
-        .names { display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 8px; }
-        
-        .bar-frame {
-            width: 100%; height: 50px; background: #111; border: 4px solid #fff;
-            position: relative; overflow: hidden; box-shadow: 0 0 25px rgba(255,0,0,0.3);
-        }
-
-        #comp-fill { position: absolute; left: 0; height: 100%; background: linear-gradient(to right, #400, #f00); width: 50%; transition: width 0.04s linear; }
-        #ply-fill { position: absolute; right: 0; height: 100%; background: linear-gradient(to left, #004, #0af); width: 50%; transition: width 0.04s linear; }
-        
-        #clash-spark {
-            position: absolute; top: 0; bottom: 0; width: 6px; background: #fff;
-            box-shadow: 0 0 20px 8px #fff, 0 0 30px 15px #ffcc00; z-index: 10;
-            transform: translateX(-50%); left: 50%; transition: left 0.04s linear;
-        }
-
-        /* 震動特效 */
-        .shake { animation: shake 0.1s infinite; }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -2px); }
-            100% { transform: translate(1px, -1px); }
-        }
-
-        .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-
-        #tap-zone {
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, #4facfe 0%, #007bff 100%);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; border: 12px solid rgba(255,255,255,0.2);
-            box-shadow: 0 0 40px rgba(0, 123, 255, 0.6);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        #tap-zone:active { transform: scale(0.85); filter: brightness(1.2); }
-
-        #msg { font-size: 3.5rem; font-weight: 900; height: 70px; text-align: center; }
-        .win-text { color: #0af; text-shadow: 0 0 30px #0af; }
-        .lose-text { color: #f00; text-shadow: 0 0 30px #f00; }
-
-        .menu { display: flex; gap: 10px; }
-        .mode-btn {
-            padding: 8px 15px; background: #222; color: #fff; border: 1px solid #444;
-            border-radius: 5px; font-size: 0.8rem; cursor: pointer;
-        }
-        .active-mode { background: #ffcc00; color: #000; border-color: #ffcc00; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1>POWER CLASH</h1>
-        <div id="difficulty-display">LEVEL: NIGHTMARE</div>
-    </div>
-
-    <div class="battle-container" id="screen">
-        <div class="names">
-            <span style="color:#f00">CPU [BOSS]</span>
-            <span style="color:#0af">YOU</span>
+    <!DOCTYPE html>
+    <html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <title>Power Clash: NIGHTMARE SPEEDRUN</title>
+        <style>
+            html, body {
+                margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+                background-color: #000; color: white; font-family: 'Impact', sans-serif;
+                touch-action: none; -webkit-user-select: none; user-select: none;
+                position: fixed;
+            }
+    
+            body { display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 10px 0; }
+    
+            .header { text-align: center; }
+            .header h1 {
+                font-size: 2rem; color: #ff0000; text-shadow: 0 0 15px #f00;
+                margin: 0; font-style: italic; letter-spacing: 2px;
+            }
+    
+            /* 計時器樣式 */
+            #timer-container {
+                font-family: monospace;
+                font-size: 2.5rem;
+                color: #ffcc00;
+                text-shadow: 0 0 10px #ffcc00;
+                margin: 10px 0;
+            }
+    
+            .battle-container { width: 92%; max-width: 500px; }
+            .names { display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 8px; font-size: 0.9rem; }
+            
+            .bar-frame {
+                width: 100%; height: 50px; background: #111; border: 4px solid #fff;
+                position: relative; overflow: hidden; box-shadow: 0 0 25px rgba(255,0,0,0.3);
+            }
+    
+            #comp-fill { position: absolute; left: 0; height: 100%; background: linear-gradient(to right, #400, #f00); width: 50%; transition: width 0.04s linear; }
+            #ply-fill { position: absolute; right: 0; height: 100%; background: linear-gradient(to left, #004, #0af); width: 50%; transition: width 0.04s linear; }
+            
+            #clash-spark {
+                position: absolute; top: 0; bottom: 0; width: 6px; background: #fff;
+                box-shadow: 0 0 20px 8px #fff, 0 0 30px 15px #ffcc00; z-index: 10;
+                transform: translateX(-50%); left: 50%; transition: left 0.04s linear;
+            }
+    
+            .shake { animation: shake 0.1s infinite; }
+            @keyframes shake {
+                0% { transform: translate(1px, 1px); }
+                50% { transform: translate(-1px, -2px); }
+                100% { transform: translate(1px, -1px); }
+            }
+    
+            .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    
+            #tap-zone {
+                width: 190px; height: 190px;
+                background: radial-gradient(circle, #4facfe 0%, #007bff 100%);
+                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                font-size: 1.8rem; border: 12px solid rgba(255,255,255,0.2);
+                box-shadow: 0 0 40px rgba(0, 123, 255, 0.6);
+                -webkit-tap-highlight-color: transparent;
+            }
+    
+            #tap-zone:active { transform: scale(0.85); filter: brightness(1.2); }
+    
+            #msg { font-size: 2.5rem; font-weight: 900; height: 80px; text-align: center; }
+            .record-text { font-size: 1.2rem; color: #aaa; margin-top: 5px; font-family: sans-serif; }
+            .win-text { color: #0af; text-shadow: 0 0 30px #0af; }
+            .lose-text { color: #f00; text-shadow: 0 0 30px #f00; }
+    
+            .menu { display: flex; gap: 10px; }
+            .mode-btn {
+                padding: 8px 12px; background: #222; color: #fff; border: 1px solid #444;
+                border-radius: 5px; font-size: 0.75rem; cursor: pointer;
+            }
+            .active-mode { background: #ffcc00; color: #000; border-color: #ffcc00; }
+        </style>
+    </head>
+    <body>
+    
+        <div class="header">
+            <h1>POWER CLASH</h1>
+            <div id="timer-container">00:00.00</div>
         </div>
-        <div class="bar-frame">
-            <div id="comp-fill"></div>
-            <div id="ply-fill"></div>
-            <div id="clash-spark"></div>
+    
+        <div class="battle-container" id="screen">
+            <div class="names">
+                <span style="color:#f00">CPU [BOSS]</span>
+                <span style="color:#0af">YOU</span>
+            </div>
+            <div class="bar-frame">
+                <div id="comp-fill"></div>
+                <div id="ply-fill"></div>
+                <div id="clash-spark"></div>
+            </div>
         </div>
-    </div>
-
-    <div id="msg"></div>
-
-    <div class="controls">
-        <div id="tap-zone">STRIKE!!!</div>
-        <div class="menu">
-            <button class="mode-btn" onclick="setDifficulty('EASY')">EASY</button>
-            <button class="mode-btn" onclick="setDifficulty('HARD')">HARD</button>
-            <button class="mode-btn active-mode" id="night-btn" onclick="setDifficulty('NIGHTMARE')">NIGHTMARE</button>
+    
+        <div id="msg"></div>
+    
+        <div class="controls">
+            <div id="tap-zone">STRIKE!!!</div>
+            <div class="menu">
+                <button class="mode-btn" onclick="setDifficulty('EASY')">EASY</button>
+                <button class="mode-btn" onclick="setDifficulty('HARD')">HARD</button>
+                <button class="mode-btn active-mode" id="night-btn" onclick="setDifficulty('NIGHTMARE')">NIGHTMARE</button>
+            </div>
+            <button style="color:#666; background:none; border:none; padding:10px;" onclick="resetGame()">RESTART GAME</button>
         </div>
-        <button style="color:#666; background:none; border:none;" onclick="resetGame()">RESTART</button>
-    </div>
+    
+    <script>
+        let pos = 50;
+        let active = false;
+        let cpuTimer;
+        let clockTimer;
+        let startTime;
+        let elapsedTime = 0;
+        let currentDifficulty = 'NIGHTMARE';
+    
+        const settings = {
+            'EASY': { ply: 5, cpuBase: 2, speed: 200, rageChance: 0.05 },
+            'HARD': { ply: 4, cpuBase: 3, speed: 150, rageChance: 0.15 },
+            'NIGHTMARE': { ply: 3.2, cpuBase: 4, speed: 100, rageChance: 0.3 }
+        };
+    
+        const compFill = document.getElementById('comp-fill');
+        const plyFill = document.getElementById('ply-fill');
+        const spark = document.getElementById('clash-spark');
+        const msgArea = document.getElementById('msg');
+        const tapZone = document.getElementById('tap-zone');
+        const screen = document.getElementById('screen');
+        const timerDisplay = document.getElementById('timer-container');
+    
+        // 防縮放
+        document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+        let lastClick = 0;
+        document.addEventListener('touchend', (e) => {
+            let now = Date.now();
+            if (now - lastClick <= 300) e.preventDefault();
+            lastClick = now;
+        }, false);
+    
+        // 計時器格式化
+        function formatTime(ms) {
+            let totalSeconds = ms / 1000;
+            let m = Math.floor(totalSeconds / 60);
+            let s = Math.floor(totalSeconds % 60);
+            let h = Math.floor((ms % 1000) / 10);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${h.toString().padStart(2, '0')}`;
+        }
+    
+        function updateClock() {
+            if (!active) return;
+            elapsedTime = Date.now() - startTime;
+            timerDisplay.innerText = formatTime(elapsedTime);
+            clockTimer = requestAnimationFrame(updateClock);
+        }
+    
+        function updateUI() {
+            spark.style.left = pos + "%";
+            compFill.style.width = pos + "%";
+            plyFill.style.width = (100 - pos) + "%";
+    
+            if (pos > 70) screen.classList.add('shake');
+            else screen.classList.remove('shake');
+    
+            if (pos <= 0) endGame("WIN");
+            if (pos >= 100) endGame("LOSE");
+        }
+    
+        tapZone.addEventListener('pointerdown', (e) => {
+            if (!active) return;
+            if (navigator.vibrate) navigator.vibrate(20);
+            pos -= settings[currentDifficulty].ply;
+            if (pos < 0) pos = 0;
+            updateUI();
+        });
+    
+        function cpuCycle() {
+            if (!active) return;
+            let conf = settings[currentDifficulty];
+            let power = conf.cpuBase;
+            if (Math.random() < conf.rageChance) {
+                power *= 2;
+                spark.style.boxShadow = "0 0 40px 20px #f00";
+                setTimeout(() => { spark.style.boxShadow = "0 0 20px 8px #fff, 0 0 30px 15px #ffcc00"; }, 100);
+            }
+            pos += power;
+            if (pos > 100) pos = 100;
+            updateUI();
+            cpuTimer = setTimeout(cpuCycle, conf.speed);
+        }
+    
+        function setDifficulty(lvl) {
+            currentDifficulty = lvl;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active-mode'));
+            event.currentTarget.classList.add('active-mode');
+            resetGame();
+        }
+    
+        function endGame(res) {
+            active = false;
+            clearTimeout(cpuTimer);
+            cancelAnimationFrame(clockTimer);
+            screen.classList.remove('shake');
+            
+            let finalTime = formatTime(elapsedTime);
+            if (res === "WIN") {
+                msgArea.innerHTML = `<span class="win-text">CHAMPION!</span><div class="record-text">Time: ${finalTime}</div>`;
+            } else {
+                msgArea.innerHTML = `<span class="lose-text">DESTROYED</span><div class="record-text">Survived: ${finalTime}</div>`;
+            }
+        }
+    
+        function resetGame() {
+            pos = 50;
+            active = true;
+            elapsedTime = 0;
+            timerDisplay.innerText = "00:00.00";
+            msgArea.innerHTML = "";
+            updateUI();
+            
+            startTime = Date.now();
+            updateClock();
+            clearTimeout(cpuTimer);
+            setTimeout(cpuCycle, 1000);
+        }
+    
+        // 初始提示
+        msgArea.innerHTML = "<div style='font-size:1.2rem; color:#ffcc00'>READY TO CLASH?</div>";
+    </script>
+    </body>
+    </html>
 
 <script>
     let pos = 50;
     let active = false;
     let cpuTimer;
-    let currentDifficulty = 'NIGHTMARE';
+    let clockTimer;
+    let startTime;
+    let elapsedTime = 0;
 
-    // 難度參數表
-    const settings = {
-        'EASY': { ply: 5, cpuBase: 2, speed: 200, rageChance: 0.05 },
-        'HARD': { ply: 4, cpuBase: 3, speed: 150, rageChance: 0.15 },
-        'NIGHTMARE': { ply: 3.2, cpuBase: 4, speed: 100, rageChance: 0.3 }
-    };
+    // 難度設定 (Nightmare 難度)
+    const plyPower = 3.5;
+    const cpuPower = 4.2;
+    const cpuInterval = 120;
 
     const compFill = document.getElementById('comp-fill');
     const plyFill = document.getElementById('ply-fill');
     const spark = document.getElementById('clash-spark');
+    const timerDisplay = document.getElementById('timer-display');
     const msgArea = document.getElementById('msg');
     const tapZone = document.getElementById('tap-zone');
-    const screen = document.getElementById('screen');
 
-    // 防縮放
+    // 防止 iOS 縮放
     document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
     let lastClick = 0;
     document.addEventListener('touchend', (e) => {
@@ -134,14 +266,25 @@
         lastClick = now;
     }, false);
 
-    function update() {
+    function formatTime(ms) {
+        let totalSeconds = ms / 1000;
+        let m = Math.floor(totalSeconds / 60);
+        let s = Math.floor(totalSeconds % 60);
+        let h = Math.floor((ms % 1000) / 10);
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${h.toString().padStart(2, '0')}`;
+    }
+
+    function updateClock() {
+        if (!active) return;
+        elapsedTime = Date.now() - startTime;
+        timerDisplay.innerText = formatTime(elapsedTime);
+        clockTimer = requestAnimationFrame(updateClock);
+    }
+
+    function updateGameUI() {
         spark.style.left = pos + "%";
         compFill.style.width = pos + "%";
         plyFill.style.width = (100 - pos) + "%";
-
-        // 當接近輸嘅時候，畫面會震動
-        if (pos > 70) screen.classList.add('shake');
-        else screen.classList.remove('shake');
 
         if (pos <= 0) endGame("WIN");
         if (pos >= 100) endGame("LOSE");
@@ -149,63 +292,48 @@
 
     tapZone.addEventListener('pointerdown', (e) => {
         if (!active) return;
-        // 手機震動回饋 (如果硬件支援)
-        if (navigator.vibrate) navigator.vibrate(20);
-        
-        pos -= settings[currentDifficulty].ply;
+        if (navigator.vibrate) navigator.vibrate(15);
+        pos -= plyPower;
         if (pos < 0) pos = 0;
-        update();
+        updateGameUI();
     });
 
     function cpuCycle() {
         if (!active) return;
-
-        let conf = settings[currentDifficulty];
-        let power = conf.cpuBase;
-
-        // 隨機爆發模式 (Rage Mode)
-        if (Math.random() < conf.rageChance) {
-            power *= 2; // 電腦呢一下威力加倍
-            spark.style.boxShadow = "0 0 40px 20px #f00"; // 提示電腦爆氣
-            setTimeout(() => { spark.style.boxShadow = "0 0 20px 8px #fff, 0 0 30px 15px #ffcc00"; }, 100);
-        }
-
-        pos += power;
+        pos += cpuPower;
         if (pos > 100) pos = 100;
-        update();
-
-        cpuTimer = setTimeout(cpuCycle, conf.speed);
-    }
-
-    function setDifficulty(lvl) {
-        currentDifficulty = lvl;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active-mode'));
-        event.target.classList.add('active-mode');
-        document.getElementById('difficulty-display').innerText = "LEVEL: " + lvl;
-        resetGame();
+        updateGameUI();
+        cpuTimer = setTimeout(cpuCycle, cpuInterval);
     }
 
     function endGame(res) {
         active = false;
         clearTimeout(cpuTimer);
-        screen.classList.remove('shake');
+        cancelAnimationFrame(clockTimer);
+        
         if (res === "WIN") {
-            msgArea.innerHTML = '<span class="win-text">CHAMPION!</span>';
+            msgArea.innerHTML = `<span style="color:#0af">YOU WON!</span><br><div class="best-record">Record: ${formatTime(elapsedTime)}</div>`;
         } else {
-            msgArea.innerHTML = '<span class="lose-text">DESTROYED</span>';
+            msgArea.innerHTML = `<span style="color:#f33">K.O.</span><br><div style="font-size:0.9rem; color:#666">Defeated at ${formatTime(elapsedTime)}</div>`;
         }
     }
 
     function resetGame() {
         pos = 50;
         active = true;
+        elapsedTime = 0;
+        timerDisplay.innerText = "00:00.00";
         msgArea.innerHTML = "";
-        update();
+        updateGameUI();
+        
+        startTime = Date.now();
+        updateClock();
         clearTimeout(cpuTimer);
-        setTimeout(cpuCycle, 1000);
+        setTimeout(cpuCycle, 800);
     }
 
-    resetGame();
+    // 初次載入提示
+    msgArea.innerHTML = "<div style='font-size:1rem; color:#ffcc00'>TAP 'READY' TO START SPEEDRUN</div>";
 </script>
 </body>
 </html>
